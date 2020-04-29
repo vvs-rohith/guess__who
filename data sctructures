@@ -1,0 +1,104 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled12.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyNjML8jCJrW4x/VGrY5ozbJ",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/vvs-rohith/guess__who/blob/master/data%20sctructures\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "t76otttGrGn9",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 68
+        },
+        "outputId": "4b3638f9-1d7a-49e2-d6b5-15370240b54f"
+      },
+      "source": [
+        "list_1=[1,2,3,4,5]\n",
+        "list_2=['r','f','d','h']\n",
+        "tuple_1=(1,4,5,6,7,8)\n",
+        "print(tuple_1[-1])\n",
+        "print(tuple_1[4])\n",
+        "print(tuple_1[1:5])\n"
+      ],
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "8\n",
+            "7\n",
+            "(4, 5, 6, 7)\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "qFGZ9M3JvbFn",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 119
+        },
+        "outputId": "c0a29882-e2c2-4631-827d-cb3796fe71dc"
+      },
+      "source": [
+        "squares = {1:1, 2:4, 3:9, 4:16, 5:25}  \n",
+        "print(squares.pop(4)) #gives out 4th element remove it from dict\n",
+        "print(squares)\n",
+        "\n",
+        "print(squares.popitem()) #remove a arbitary item\n",
+        "print(squares)\n",
+        "del squares[1]  #remove through indexing\n",
+        "\n",
+        "print(squares)\n",
+        "\n",
+        "squares.clear()#clears the dict\n",
+        "\n",
+        "print(squares)\n",
+        "\n",
+        "del squares#deletes the dict"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "16\n",
+            "{1: 1, 2: 4, 3: 9, 5: 25}\n",
+            "(5, 25)\n",
+            "{1: 1, 2: 4, 3: 9}\n",
+            "{2: 4, 3: 9}\n",
+            "{}\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    }
+  ]
+}
