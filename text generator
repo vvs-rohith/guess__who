@@ -1,0 +1,364 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled16.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "toc_visible": true,
+      "authorship_tag": "ABX9TyNQCBxg9K9WXpcyHMPZq42N",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/vvs-rohith/guess__who/blob/master/text%20generator\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "KPQnJj3GaEvY",
+        "colab_type": "code",
+        "outputId": "c3470153-4f87-4ade-d205-d4b3f8874c94",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 51
+        }
+      },
+      "source": [
+        "import numpy \n",
+        "import sys\n",
+        "import pandas as pd\n",
+        "import nltk\n",
+        "nltk.download('stopwords')\n",
+        "from nltk.tokenize import RegexpTokenizer\n",
+        "from nltk.corpus import stopwords\n",
+        "from keras.models import Sequential\n",
+        "from keras.layers import Dense,Dropout,LSTM\n",
+        "from keras.utils import np_utils\n",
+        "from keras.callbacks import ModelCheckpoint\n",
+        "from pandas import read_csv"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Package stopwords is already up-to-date!\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Ss8FzU0OAjTG",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "file=open(\"/content/frankstin-2.txt\",encoding='cp1252').read()"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "cu9dZl5W6RjR",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "def tokenize_words(input):\n",
+        "    input=input.lower()\n",
+        "    tokenizer=RegexpTokenizer(r'\\w+')\n",
+        "    tokens=tokenizer.tokenize(input)\n",
+        "    filtered=filter(lambda token:token not in stopwords.words('english'),tokens )\n",
+        "    return ''.join(filtered)\n",
+        "processed_inputs =tokenize_words(file)"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "99Fa5KVf6UD9",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "chars=sorted(list(set(processed_inputs)))\n",
+        "char_to_num=dict((c,i)for i, c in enumerate(chars))"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "oHPb3DQZpDGN",
+        "colab_type": "code",
+        "outputId": "f5c50370-cc36-4648-8659-37ae3f74435e",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 51
+        }
+      },
+      "source": [
+        "input_len = len(processed_inputs)\n",
+        "vocab_len = len(chars)\n",
+        "print (\"Total number of characters:\", input_len)\n",
+        "print (\"Total vocab:\", vocab_len)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Total number of characters: 233236\n",
+            "Total vocab: 41\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Dn7-lyOY6U6N",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "seq_length=100\n",
+        "x_data=[]\n",
+        "y_data=[]"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ZjmKeZlJ7NOd",
+        "colab_type": "code",
+        "outputId": "2d7c46fa-6932-4613-c8d7-b78a1bd838f5",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 34
+        }
+      },
+      "source": [
+        "for i in range(0, input_len - seq_length, 1):\n",
+        "    # Define input and output sequences\n",
+        "    # Input is the current character plus desired sequence length\n",
+        "    in_seq = processed_inputs[i:i + seq_length]\n",
+        "\n",
+        "    # Out sequence is the initial character plus total sequence length\n",
+        "    out_seq = processed_inputs[i + seq_length]\n",
+        "\n",
+        "    # We now convert list of characters to integers based on\n",
+        "    # previously and add the values to our lists\n",
+        "    x_data.append([char_to_num[char] for char in in_seq])\n",
+        "    y_data.append(char_to_num[out_seq])\n",
+        "n_patterns = len(x_data)\n",
+        "print (\"Total Patterns:\", n_patterns)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Total Patterns: 233136\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PV8_03eQ8ZYi",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "X=numpy.reshape(x_data,(n_patterns,seq_length,1))\n",
+        "X=X/float(vocab_len)"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "4zF5aPMbrLnr",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "y = np_utils.to_categorical(y_data)"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "QlO_tJXA9MJv",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "model = Sequential()\n",
+        "model.add(LSTM(256, input_shape=(X.shape[1], X.shape[2]), return_sequences=True))\n",
+        "model.add(Dropout(0.2))\n",
+        "model.add(LSTM(256, return_sequences=True))\n",
+        "model.add(Dropout(0.2))\n",
+        "model.add(LSTM(128))\n",
+        "model.add(Dropout(0.2))\n",
+        "model.add(Dense(y.shape[1], activation='softmax'))"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "iahAJepbrc9P",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "model.compile(loss='categorical_crossentropy', optimizer='adam')"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "smGqZoKbrj3A",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "filepath = \"model_weights_saved.hdf5\"\n",
+        "checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')\n",
+        "desired_callbacks = [checkpoint]"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "c8CX-QXWrngb",
+        "colab_type": "code",
+        "outputId": "fb87672a-e678-44f6-cb7c-3feab5b23bc3",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 51
+        }
+      },
+      "source": [
+        "model.fit(X, y, epochs=4, batch_size=256, callbacks=desired_callbacks)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Epoch 1/4\n",
+            " 20224/233136 [=>............................] - ETA: 59:11 - loss: 3.0294"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "GgQyBv8frvXO",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "filename = \"model_weights_saved.hdf5\"\n",
+        "model.load_weights(filename)\n",
+        "model.compile(loss='categorical_crossentropy', optimizer='adam')"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "q-UVNYBlryIJ",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "num_to_char = dict((i, c) for i, c in enumerate(chars))"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "jgLER_Vir2Ge",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "start = numpy.random.randint(0, len(x_data) - 1)\n",
+        "pattern = x_data[start]\n",
+        "print(\"Random Seed:\")\n",
+        "print(\"\\\"\", ''.join([num_to_char[value] for value in pattern]), \"\\\"\")"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "CYegDaXIr8Kn",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "for i in range(1000):\n",
+        "    x = numpy.reshape(pattern, (1, len(pattern), 1))\n",
+        "    x = x / float(vocab_len)\n",
+        "    prediction = model.predict(x, verbose=0)\n",
+        "    index = numpy.argmax(prediction)\n",
+        "    result = num_to_char[index]\n",
+        "    seq_in = [num_to_char[value] for value in pattern]\n",
+        "\n",
+        "    sys.stdout.write(result)\n",
+        "\n",
+        "    pattern.append(index)\n",
+        "    pattern = pattern[1:len(pattern)]"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    }
+  ]
+}
